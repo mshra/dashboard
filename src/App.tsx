@@ -9,7 +9,8 @@ import RepaymentInformation from "./components/RepaymentInformation";
 import { Data } from "./types";
 
 const App = () => {
-  const [data, setData] = useState<Data | null>({
+  // Hard coded the as the endpoint was exhausted.
+  const [data] = useState<Data | null>({
     hospital_name: "General Hospital",
     claimbook_uhid: "UHID123456",
     total_limit_allocated: 1000000,
