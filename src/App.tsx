@@ -11,7 +11,7 @@ import { Data } from "./types";
 
 const App = () => {
   // Hard coded the response as the API endpoint was exhausted.
-  const [data, setData] = useState<Data | null>({
+  const [data] = useState<Data | null>({
     hospital_name: "General Hospital",
     claimbook_uhid: "UHID123456",
     total_limit_allocated: 1000000,
