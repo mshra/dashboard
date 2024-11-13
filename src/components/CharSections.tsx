@@ -45,7 +45,7 @@ const RenderActiveShape = (props: RenderActiveShapeProps) => {
         y={cy}
         dy={8}
         textAnchor="middle"
-        fill="#374151"
+        fill="#a855f7"
         className="text-sm font-medium"
       >
         {payload.name}
@@ -57,7 +57,7 @@ const RenderActiveShape = (props: RenderActiveShapeProps) => {
         outerRadius={outerRadius}
         startAngle={startAngle}
         endAngle={endAngle}
-        fill="#4F46E5"
+        fill="#c084fc"
       />
       <Sector
         cx={cx}
