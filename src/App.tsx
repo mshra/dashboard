@@ -1,3 +1,4 @@
+// import { useEffect } from "react";
 import { useState } from "react";
 import ChartSection from "./components/CharSections";
 import ClaimsTable from "./components/ClaimsTable";
@@ -9,8 +10,8 @@ import RepaymentInformation from "./components/RepaymentInformation";
 import { Data } from "./types";
 
 const App = () => {
-  // Hard coded the as the endpoint was exhausted.
-  const [data] = useState<Data | null>({
+  // Hard coded the response as the API endpoint was exhausted.
+  const [data, setData] = useState<Data | null>({
     hospital_name: "General Hospital",
     claimbook_uhid: "UHID123456",
     total_limit_allocated: 1000000,
@@ -51,6 +52,16 @@ const App = () => {
     },
   });
   const [activeIndex, setActiveIndex] = useState<number>(0);
+
+  // useEffect(() => {
+  //   async function fetchData() {
+  //     const response: Data = await fetch(
+  //       "https://15734573-beec-42a6-9f83-e25fb78af6f2.mock.pstmn.io/hcassigment",
+  //     ).then((res) => res.json()).then(err => console.error(err));
+  //     setData(response);
+  //   }
+  //   fetchData();
+  // }, []);
 
   if (!data) return <LoadingScreen />;
 
