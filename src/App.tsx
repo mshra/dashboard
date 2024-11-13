@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
 import { Data } from "./types";
 import { Pie, PieChart, ResponsiveContainer, Sector } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  CartesianGrid,
+} from "recharts";
 import { formatCurrency } from "./utils";
 import { IndianRupee, Sheet } from "lucide-react";
 
@@ -22,6 +31,31 @@ const App: React.FC = () => {
   }, []);
 
   if (!data) return <div>Loading...</div>;
+
+  const RepaymentsSection = ({ data }) => {
+    const barData = [
+      { name: "Disbursals", amount: data.disbursals_amount },
+      { name: "Repayments", amount: data.repayments_amount },
+    ];
+
+    return (
+      <div className="bg-white p-4 shadow rounded-lg mb-6">
+        <h2 className="text-xl font-semibold mb-4">Repayments</h2>
+        <p>Upcoming Repayment Date: {data.upcoming_repayment_date}</p>
+        <p>Total Due: {data.total_due}</p>
+        <p>Amount to be Repaid: {data.amount_to_be_repaid_on_upcoming_date}</p>
+
+        <BarChart width={400} height={300} data={barData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="amount" fill="#8884d8" />
+        </BarChart>
+      </div>
+    );
+  };
 
   function onPieEnter(_: any, index: number) {
     setActiveIndex(index);
@@ -85,33 +119,38 @@ const App: React.FC = () => {
           y={ey}
           textAnchor={textAnchor}
           fill="#333"
+          className="text-sm"
         >{`${formatCurrency(value)}`}</text>
       </g>
     );
   };
 
   return (
-    <>
-      <header className="p-8 text-center">
-        <h1 className="underline decoration-indigo-500 decoration-solid decoration-4 font-extrabold text-3xl">
+    <div className="min-h-screen bg-gray-50">
+      <header className="p-4 md:p-8 text-center">
+        <h1 className="underline decoration-indigo-500 decoration-solid decoration-4 font-extrabold text-2xl md:text-3xl">
           {data.hospital_name}
         </h1>
-        <span className="text-sm text-gray-400">{data.claimbook_uhid}</span>
+        <span className="text-xs md:text-sm text-gray-400">
+          {data.claimbook_uhid}
+        </span>
       </header>
 
-      <main>
-        <div className="flex justify-center gap-4">
+      <main className="px-4 md:px-8">
+        <div className="flex flex-col lg:flex-row gap-4 mb-8">
           {/* Fund utilization section */}
-          <div className="w-5/12 p-4 rounded-md shadow-lg">
-            <div className="flex justify-between">
-              <h2 className="text-2xl font-bold">Fund Utilization</h2>
-              <IndianRupee />
+          <div className="w-full lg:w-1/2 p-4 rounded-md shadow-lg bg-white">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl md:text-2xl font-bold">
+                Fund Utilization
+              </h2>
+              <IndianRupee className="w-5 h-5" />
             </div>
 
             {/* Pie Chart */}
-            <div className="flex justify-center">
-              <ResponsiveContainer height={400} width={600}>
-                <PieChart width={400} height={600}>
+            <div className="w-full h-[300px] md:h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
                   <Pie
                     activeIndex={activeIndex}
                     activeShape={renderActiveShape}
@@ -136,86 +175,113 @@ const App: React.FC = () => {
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex">
+            <div className="text-sm md:text-base mt-4">
               Total Limit Allocated:{" "}
               {formatCurrency(data.total_limit_allocated)}
             </div>
           </div>
 
-          <div className="w-5/12">
+          <div className="w-full lg:w-1/2 flex flex-col gap-4">
             {/* Upcoming Repayment */}
-            <div className="p-4 rounded-md shadow-lg">
-              <div>
-                <h2 className="text-2xl font-bold mb-4">Upcoming Repayment</h2>
+            <div className="p-4 rounded-md shadow-lg bg-white">
+              <h2 className="text-xl md:text-2xl font-bold mb-4">
+                Upcoming Repayment
+              </h2>
+              <div className="space-y-2 text-sm md:text-base">
+                <p>
+                  <strong>Date:</strong> {data.upcoming_repayment_date}
+                </p>
+                <p>
+                  <strong>Amount:</strong> ₹
+                  {data.amount_to_be_repaid_on_upcoming_date.toLocaleString()}
+                </p>
+                <p>
+                  <strong>Total Due:</strong> ₹{data.total_due.toLocaleString()}
+                </p>
+                <p>
+                  <strong>Repayment Tenure:</strong> {data.repayment_tenure}
+                </p>
               </div>
-              <p className="mb-2">
-                <strong>Date:</strong> {data.upcoming_repayment_date}
-              </p>
-              <p className="mb-2">
-                <strong>Amount:</strong> ₹
-                {data.amount_to_be_repaid_on_upcoming_date.toLocaleString()}
-              </p>
-              <p className="mb-2">
-                <strong>Total Due:</strong> ₹{data.total_due.toLocaleString()}
-              </p>
-              <p>
-                <strong>Repayment Tenure:</strong> {data.repayment_tenure}
-              </p>
             </div>
 
-            {/* bill amount discounted */}
-            <div className="p-4 rounded-md shadow-lg">
-              <h2 className="text-2xl font-bold mb-4">
+            {/* Bill amount discounted */}
+            <div className="p-4 rounded-md shadow-lg bg-white">
+              <h2 className="text-xl md:text-2xl font-bold mb-4">
                 Bill Amount Discounted
               </h2>
-              <p>{formatCurrency(data.bill_amount_discounted_to_date)}</p>
+              <p className="text-sm md:text-base">
+                {formatCurrency(data.bill_amount_discounted_to_date)}
+              </p>
             </div>
 
             {/* Amount Repaid*/}
-            <div className="p-4 rounded-md shadow-lg">
-              <h2 className="text-2xl font-bold mb-4">Amount Repaid</h2>
-              <p>{formatCurrency(data.amount_repaid_to_date)}</p>
+            <div className="p-4 rounded-md shadow-lg bg-white">
+              <h2 className="text-xl md:text-2xl font-bold mb-4">
+                Amount Repaid
+              </h2>
+              <p className="text-sm md:text-base">
+                {formatCurrency(data.amount_repaid_to_date)}
+              </p>
             </div>
           </div>
         </div>
+        <RepaymentsSection data={data} />
 
-        <div className="flex justify-center w-full p-8">
-          {/* claims table */}
-          <div className="w-9/12 p-4 rounded-md shadow-lg">
-            <div className="flex justify-between">
-              <h2 className="text-2xl font-bold mb-4">Claims</h2>
-              <Sheet />
+        {/* Claims table */}
+        <div className="w-full mb-8">
+          <div className="p-4 rounded-md shadow-lg bg-white overflow-x-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl md:text-2xl font-bold">Claims</h2>
+              <Sheet className="w-5 h-5" />
             </div>
-            <table className="min-w-full table-auto">
-              <thead>
-                <tr className="bg-gray-200">
-                  <th className="px-4 py-2 text-left">Claim ID</th>
-                  <th className="px-4 py-2 text-left">Claim Amount</th>
-                  <th className="px-4 py-2 text-left">Claim Date</th>
-                  <th className="px-4 py-2 text-left">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.values(data.claims_data).map((claim, index) => (
-                  <tr key={index}>
-                    <td className="border px-4 py-2">{claim.claim_id}</td>
-                    <td className="border px-4 py-2">{claim.claim_amount}</td>
-                    <td className="border px-4 py-2">
-                      {claim.claim_date.toString()}
-                    </td>
-                    <td
-                      className={`border px-4 py-2 ${claim.claim_status === "Paid" ? "text-green-600" : "text-yellow-600"}`}
-                    >
-                      {claim.claim_status}
-                    </td>
+            <div className="min-w-full">
+              <table className="w-full table-auto">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="px-4 py-2 text-left text-sm md:text-base">
+                      Claim ID
+                    </th>
+                    <th className="px-4 py-2 text-left text-sm md:text-base">
+                      Claim Amount
+                    </th>
+                    <th className="px-4 py-2 text-left text-sm md:text-base">
+                      Claim Date
+                    </th>
+                    <th className="px-4 py-2 text-left text-sm md:text-base">
+                      Status
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {Object.values(data.claims_data).map((claim, index) => (
+                    <tr key={index}>
+                      <td className="border px-4 py-2 text-sm md:text-base">
+                        {claim.claim_id}
+                      </td>
+                      <td className="border px-4 py-2 text-sm md:text-base">
+                        {claim.claim_amount}
+                      </td>
+                      <td className="border px-4 py-2 text-sm md:text-base">
+                        {claim.claim_date.toString()}
+                      </td>
+                      <td
+                        className={`border px-4 py-2 text-sm md:text-base ${
+                          claim.claim_status === "Paid"
+                            ? "text-green-600"
+                            : "text-yellow-600"
+                        }`}
+                      >
+                        {claim.claim_status}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </main>
-    </>
+    </div>
   );
 };
 
