@@ -1,7 +1,7 @@
 export type Claim = {
-  claim_id: number;
+  claim_id: string;
   claim_amount: number;
-  claim_date: Date;
+  claim_date: string;
   claim_status: "Pending" | "Paid";
 };
 
@@ -27,7 +27,7 @@ export type Data = {
   claims_data: {
     claim_1: Claim;
     claim_2: Claim;
-    claim_e: Claim;
+    claim_3: Claim;
   };
 };
 
