@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { Data } from "./types";
-import Card from "./components/Card";
 
-function App() {
+const App: React.FC = () => {
   const [data, setData] = useState<Data | null>(null);
 
   useEffect(() => {
@@ -22,39 +21,16 @@ function App() {
 
   return (
     <>
-      <header className="p-8 underline decoration-indigo-500 decoration-solid decoration-4 font-extrabold text-3xl text-center">
-        <h1>{data.hospital_name}</h1>
+      <header className="p-8 text-center">
+        <h1 className="underline decoration-indigo-500 decoration-solid decoration-4 font-extrabold text-3xl p-2">
+          {data.hospital_name}
+        </h1>
+        <span className="text-sm text-gray-400">{data.claimbook_uhid}</span>
       </header>
-      <main>
-        <div className="flex justify-center gap-4">
-          <Card
-            props={{
-              heading: "Total Limit Allocated",
-              content: data.total_limit_allocated,
-            }}
-          />
-          <Card
-            props={{
-              heading: "Current Limit Utilised",
-              content: data.current_limit_utilised,
-            }}
-          />
-          <Card
-            props={{
-              heading: "Bill Amount Discounted",
-              content: data.bill_amount_discounted_to_date,
-            }}
-          />
-          <Card
-            props={{
-              heading: "Amount Repaid",
-              content: data.amount_repaid_to_date,
-            }}
-          />
-        </div>
-      </main>
+
+      <main></main>
     </>
   );
-}
+};
 
 export default App;
