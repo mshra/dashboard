@@ -30,3 +30,32 @@ export type Data = {
     claim_e: Claim;
   };
 };
+
+export interface StatCardProps {
+  title: string;
+  value: string | number;
+  subtitle?: string;
+  className?: string;
+}
+
+export interface RenderActiveShapeProps {
+  cx: number;
+  cy: number;
+  midAngle: number;
+  innerRadius: number;
+  outerRadius: number;
+  startAngle: number;
+  endAngle: number;
+  payload: {
+    name: string;
+    value: number;
+    percent: number;
+  };
+  value: number;
+  percent: number;
+}
+
+export interface BarDataItem {
+  name: string;
+  amount: number;
+}

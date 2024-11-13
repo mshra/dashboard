@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
 import { Pie, PieChart, ResponsiveContainer, Sector } from "recharts";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { formatCurrency } from "./utils";
+import {
+  Data,
+  StatCardProps,
+  RenderActiveShapeProps,
+  BarDataItem,
+} from "./types";
 
 const App = () => {
-  const [data, setData] = useState(null);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [data, setData] = useState<Data | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number>(0);
 
   useEffect(() => {
     async function fetchData() {
@@ -26,14 +33,7 @@ const App = () => {
     );
   }
 
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-    }).format(value);
-  };
-
-  const renderActiveShape = (props) => {
+  const renderActiveShape = (props: RenderActiveShapeProps) => {
     const RADIAN = Math.PI / 180;
     const {
       cx,
@@ -45,7 +45,8 @@ const App = () => {
       endAngle,
       payload,
       value,
-    } = props;
+      percent,
+    } = props as RenderActiveShapeProps;
     const sin = Math.sin(-RADIAN * midAngle);
     const cos = Math.cos(-RADIAN * midAngle);
     const sx = cx + (outerRadius + 10) * cos;
@@ -84,14 +85,14 @@ const App = () => {
           endAngle={endAngle}
           innerRadius={outerRadius + 6}
           outerRadius={outerRadius + 10}
-          fill="#c084fc"
+          fill="#6366F1"
         />
         <path
           d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
           stroke="#4F46E5"
           fill="none"
         />
-        <circle cx={ex} cy={ey} r={2} fill="#a78bfa" stroke="none" />
+        <circle cx={ex} cy={ey} r={2} fill="#4F46E5" stroke="none" />
         <text
           x={ex + (cos >= 0 ? 1 : -1) * 12}
           y={ey}
@@ -99,21 +100,28 @@ const App = () => {
           fill="#374151"
           className="text-sm font-medium"
         >
-          {formatCurrency(value)}
+          {`${formatCurrency(value)} (${(percent * 100).toFixed(0)}%)`}
         </text>
       </g>
     );
   };
 
-  const StatCard = ({ title, value, subtitle }) => (
-    <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+  const StatCard = ({
+    title,
+    value,
+    subtitle,
+    className = "",
+  }: StatCardProps) => (
+    <div
+      className={`bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow ${className}`}
+    >
       <h3 className="text-gray-500 text-sm font-medium mb-2">{title}</h3>
       <p className="text-2xl font-bold text-gray-900 mb-1">{value}</p>
       {subtitle && <p className="text-gray-600 text-sm">{subtitle}</p>}
     </div>
   );
 
-  const barData = [
+  const barData: BarDataItem[] = [
     { name: "Disbursals", amount: data.disbursals_amount },
     { name: "Repayments", amount: data.repayments_amount },
   ];
@@ -121,7 +129,7 @@ const App = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header>
+      <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <h1 className="text-3xl font-bold text-gray-900 text-center">
             {data.hospital_name}
@@ -134,13 +142,33 @@ const App = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Top Stats Grid */}
+        {/* Key Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard
             title="Total Limit Allocated"
             value={formatCurrency(data.total_limit_allocated)}
           />
           <StatCard
+            title="Current Limit Utilised"
+            value={formatCurrency(data.current_limit_utilised)}
+            subtitle={`${data.current_limit_utilised_percentage}% of total limit`}
+          />
+          <StatCard
+            title="Unutilised Funds"
+            value={formatCurrency(data.current_unutilised_funds)}
+            subtitle={`${data.current_unutilised_funds_percentage}% available`}
+          />
+          <StatCard
+            title="Subvention Per Claim"
+            value={formatCurrency(data.subvention_per_claim)}
+            subtitle={`Tenure: ${data.repayment_tenure}`}
+          />
+        </div>
+
+        {/* Financial Metrics Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <StatCard
+            subtitle={"empty"}
             title="Bill Amount Discounted"
             value={formatCurrency(data.bill_amount_discounted_to_date)}
           />
@@ -149,10 +177,37 @@ const App = () => {
             value={formatCurrency(data.amount_repaid_to_date)}
           />
           <StatCard
-            title="Upcoming Repayment"
-            value={formatCurrency(data.amount_to_be_repaid_on_upcoming_date)}
-            subtitle={`Due on ${data.upcoming_repayment_date}`}
+            title="Interest Paid"
+            value={formatCurrency(data.interest_paid_on_borrowed_amt_to_date)}
+            subtitle={`Total Interest: ${formatCurrency(data.total_interest_amount)}`}
           />
+        </div>
+
+        {/* Repayment Information */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">
+            Repayment Details
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <p className="text-gray-500 text-sm mb-1">Upcoming Date</p>
+              <p className="text-lg font-semibold">
+                {data.upcoming_repayment_date}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-500 text-sm mb-1">Amount Due</p>
+              <p className="text-lg font-semibold">
+                {formatCurrency(data.amount_to_be_repaid_on_upcoming_date)}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-500 text-sm mb-1">Total Due</p>
+              <p className="text-lg font-semibold">
+                {formatCurrency(data.total_due)}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Charts Section */}
@@ -167,15 +222,19 @@ const App = () => {
                 <PieChart>
                   <Pie
                     activeIndex={activeIndex}
-                    activeShape={renderActiveShape}
+                    activeShape={
+                      renderActiveShape as (props: unknown) => JSX.Element
+                    }
                     data={[
                       {
                         name: "Utilised Funds",
                         value: data.current_limit_utilised,
+                        percent: data.current_limit_utilised_percentage / 100,
                       },
                       {
                         name: "Unutilised Funds",
                         value: data.current_unutilised_funds,
+                        percent: data.current_unutilised_funds_percentage / 100,
                       },
                     ]}
                     cx="50%"
@@ -203,6 +262,7 @@ const App = () => {
                   <XAxis dataKey="name" stroke="#6B7280" />
                   <YAxis stroke="#6B7280" />
                   <Tooltip
+                    formatter={(value) => formatCurrency(value as number)}
                     contentStyle={{
                       backgroundColor: "white",
                       border: "none",
@@ -250,7 +310,7 @@ const App = () => {
                       {formatCurrency(claim.claim_amount)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {claim.claim_date}
+                      {claim.claim_date.toString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
