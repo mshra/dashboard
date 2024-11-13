@@ -1,21 +1,10 @@
 import { useEffect, useState } from "react";
-import { Data } from "./types";
 import { Pie, PieChart, ResponsiveContainer, Sector } from "recharts";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  CartesianGrid,
-} from "recharts";
-import { formatCurrency } from "./utils";
-import { IndianRupee, Sheet } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
-const App: React.FC = () => {
-  const [data, setData] = useState<Data | null>(null);
-  const [activeIndex, setActiveIndex] = useState<number>(0);
+const App = () => {
+  const [data, setData] = useState(null);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     async function fetchData() {
@@ -26,40 +15,23 @@ const App: React.FC = () => {
         .catch((err) => console.log(err));
       setData(response);
     }
-
     fetchData();
   }, []);
 
-  if (!data) return <div>Loading...</div>;
-
-  const RepaymentsSection = ({ data }) => {
-    const barData = [
-      { name: "Disbursals", amount: data.disbursals_amount },
-      { name: "Repayments", amount: data.repayments_amount },
-    ];
-
+  if (!data) {
     return (
-      <div className="bg-white p-4 shadow rounded-lg mb-6">
-        <h2 className="text-xl font-semibold mb-4">Repayments</h2>
-        <p>Upcoming Repayment Date: {data.upcoming_repayment_date}</p>
-        <p>Total Due: {data.total_due}</p>
-        <p>Amount to be Repaid: {data.amount_to_be_repaid_on_upcoming_date}</p>
-
-        <BarChart width={400} height={300} data={barData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="amount" fill="#8884d8" />
-        </BarChart>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
       </div>
     );
-  };
-
-  function onPieEnter(_: any, index: number) {
-    setActiveIndex(index);
   }
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+    }).format(value);
+  };
 
   const renderActiveShape = (props) => {
     const RADIAN = Math.PI / 180;
@@ -71,7 +43,6 @@ const App: React.FC = () => {
       outerRadius,
       startAngle,
       endAngle,
-      fill,
       payload,
       value,
     } = props;
@@ -87,7 +58,14 @@ const App: React.FC = () => {
 
     return (
       <g>
-        <text x={cx} y={cy} dy={8} textAnchor="middle" fill={fill}>
+        <text
+          x={cx}
+          y={cy}
+          dy={8}
+          textAnchor="middle"
+          fill="#374151"
+          className="text-sm font-medium"
+        >
           {payload.name}
         </text>
         <Sector
@@ -97,7 +75,7 @@ const App: React.FC = () => {
           outerRadius={outerRadius}
           startAngle={startAngle}
           endAngle={endAngle}
-          fill={"#7c3aed"}
+          fill="#4F46E5"
         />
         <Sector
           cx={cx}
@@ -106,49 +84,85 @@ const App: React.FC = () => {
           endAngle={endAngle}
           innerRadius={outerRadius + 6}
           outerRadius={outerRadius + 10}
-          fill={"#6366f1"}
+          fill="#c084fc"
         />
         <path
           d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
-          stroke={fill}
+          stroke="#4F46E5"
           fill="none"
         />
-        <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
+        <circle cx={ex} cy={ey} r={2} fill="#a78bfa" stroke="none" />
         <text
           x={ex + (cos >= 0 ? 1 : -1) * 12}
           y={ey}
           textAnchor={textAnchor}
-          fill="#333"
-          className="text-sm"
-        >{`${formatCurrency(value)}`}</text>
+          fill="#374151"
+          className="text-sm font-medium"
+        >
+          {formatCurrency(value)}
+        </text>
       </g>
     );
   };
 
+  const StatCard = ({ title, value, subtitle }) => (
+    <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+      <h3 className="text-gray-500 text-sm font-medium mb-2">{title}</h3>
+      <p className="text-2xl font-bold text-gray-900 mb-1">{value}</p>
+      {subtitle && <p className="text-gray-600 text-sm">{subtitle}</p>}
+    </div>
+  );
+
+  const barData = [
+    { name: "Disbursals", amount: data.disbursals_amount },
+    { name: "Repayments", amount: data.repayments_amount },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="p-4 md:p-8 text-center">
-        <h1 className="underline decoration-indigo-500 decoration-solid decoration-4 font-extrabold text-2xl md:text-3xl">
-          {data.hospital_name}
-        </h1>
-        <span className="text-xs md:text-sm text-gray-400">
-          {data.claimbook_uhid}
-        </span>
+      {/* Header */}
+      <header>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <h1 className="text-3xl font-bold text-gray-900 text-center">
+            {data.hospital_name}
+          </h1>
+          <p className="text-center text-gray-500 mt-1">
+            {data.claimbook_uhid}
+          </p>
+        </div>
       </header>
 
-      <main className="px-4 md:px-8">
-        <div className="flex flex-col lg:flex-row gap-4 mb-8">
-          {/* Fund utilization section */}
-          <div className="w-full lg:w-1/2 p-4 rounded-md shadow-lg bg-white">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl md:text-2xl font-bold">
-                Fund Utilization
-              </h2>
-              <IndianRupee className="w-5 h-5" />
-            </div>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Top Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard
+            title="Total Limit Allocated"
+            value={formatCurrency(data.total_limit_allocated)}
+          />
+          <StatCard
+            title="Bill Amount Discounted"
+            value={formatCurrency(data.bill_amount_discounted_to_date)}
+          />
+          <StatCard
+            title="Amount Repaid"
+            value={formatCurrency(data.amount_repaid_to_date)}
+          />
+          <StatCard
+            title="Upcoming Repayment"
+            value={formatCurrency(data.amount_to_be_repaid_on_upcoming_date)}
+            subtitle={`Due on ${data.upcoming_repayment_date}`}
+          />
+        </div>
 
-            {/* Pie Chart */}
-            <div className="w-full h-[300px] md:h-[400px]">
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Fund Utilization */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">
+              Fund Utilization
+            </h2>
+            <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -166,118 +180,93 @@ const App: React.FC = () => {
                     ]}
                     cx="50%"
                     cy="50%"
-                    fill="#8884d8"
-                    dataKey={"value"}
+                    innerRadius={60}
                     outerRadius={80}
-                    innerRadius={65}
-                    onMouseEnter={onPieEnter}
+                    fill="#4F46E5"
+                    dataKey="value"
+                    onMouseEnter={(_, index) => setActiveIndex(index)}
                   />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="text-sm md:text-base mt-4">
-              Total Limit Allocated:{" "}
-              {formatCurrency(data.total_limit_allocated)}
-            </div>
           </div>
 
-          <div className="w-full lg:w-1/2 flex flex-col gap-4">
-            {/* Upcoming Repayment */}
-            <div className="p-4 rounded-md shadow-lg bg-white">
-              <h2 className="text-xl md:text-2xl font-bold mb-4">
-                Upcoming Repayment
-              </h2>
-              <div className="space-y-2 text-sm md:text-base">
-                <p>
-                  <strong>Date:</strong> {data.upcoming_repayment_date}
-                </p>
-                <p>
-                  <strong>Amount:</strong> ₹
-                  {data.amount_to_be_repaid_on_upcoming_date.toLocaleString()}
-                </p>
-                <p>
-                  <strong>Total Due:</strong> ₹{data.total_due.toLocaleString()}
-                </p>
-                <p>
-                  <strong>Repayment Tenure:</strong> {data.repayment_tenure}
-                </p>
-              </div>
-            </div>
-
-            {/* Bill amount discounted */}
-            <div className="p-4 rounded-md shadow-lg bg-white">
-              <h2 className="text-xl md:text-2xl font-bold mb-4">
-                Bill Amount Discounted
-              </h2>
-              <p className="text-sm md:text-base">
-                {formatCurrency(data.bill_amount_discounted_to_date)}
-              </p>
-            </div>
-
-            {/* Amount Repaid*/}
-            <div className="p-4 rounded-md shadow-lg bg-white">
-              <h2 className="text-xl md:text-2xl font-bold mb-4">
-                Amount Repaid
-              </h2>
-              <p className="text-sm md:text-base">
-                {formatCurrency(data.amount_repaid_to_date)}
-              </p>
+          {/* Disbursals vs Repayments */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">
+              Disbursals vs Repayments
+            </h2>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={barData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                  <XAxis dataKey="name" stroke="#6B7280" />
+                  <YAxis stroke="#6B7280" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "white",
+                      border: "none",
+                      borderRadius: "0.5rem",
+                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                    }}
+                  />
+                  <Bar dataKey="amount" fill="#4F46E5" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </div>
-        <RepaymentsSection data={data} />
 
-        {/* Claims table */}
-        <div className="w-full mb-8">
-          <div className="p-4 rounded-md shadow-lg bg-white overflow-x-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl md:text-2xl font-bold">Claims</h2>
-              <Sheet className="w-5 h-5" />
-            </div>
-            <div className="min-w-full">
-              <table className="w-full table-auto">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="px-4 py-2 text-left text-sm md:text-base">
-                      Claim ID
-                    </th>
-                    <th className="px-4 py-2 text-left text-sm md:text-base">
-                      Claim Amount
-                    </th>
-                    <th className="px-4 py-2 text-left text-sm md:text-base">
-                      Claim Date
-                    </th>
-                    <th className="px-4 py-2 text-left text-sm md:text-base">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.values(data.claims_data).map((claim, index) => (
-                    <tr key={index}>
-                      <td className="border px-4 py-2 text-sm md:text-base">
-                        {claim.claim_id}
-                      </td>
-                      <td className="border px-4 py-2 text-sm md:text-base">
-                        {claim.claim_amount}
-                      </td>
-                      <td className="border px-4 py-2 text-sm md:text-base">
-                        {claim.claim_date.toString()}
-                      </td>
-                      <td
-                        className={`border px-4 py-2 text-sm md:text-base ${
+        {/* Claims Table */}
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-xl font-bold text-gray-900">Claims</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Claim ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Amount
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {Object.values(data.claims_data).map((claim, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {claim.claim_id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatCurrency(claim.claim_amount)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {claim.claim_date}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                           claim.claim_status === "Paid"
-                            ? "text-green-600"
-                            : "text-yellow-600"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-yellow-100 text-yellow-800"
                         }`}
                       >
                         {claim.claim_status}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </main>
